@@ -12,8 +12,8 @@ class ElasticsearchLogger:
     Class describing how to connect to ES ou Amazon Elasticsearch Service
     """
     if os.environ.get('ENVIRONMENT', 'local') != "local":
-        AWS_CREDENTIALS = AWSV4SignerAuth((os.environ.get('ACCESS_KEY'), os.environ.get('SECRET_KEY')),
-                                          os.environ.get('REGION'))
+        AWS_CREDENTIALS = AWSV4SignerAuth((os.environ.get('ACCESS_KEY'),
+                                           os.environ.get('SECRET_KEY')), os.environ.get('REGION'))
     else:
         AWS_CREDENTIALS = None
     RESOURCE_ALREADY_EXISTS = 'resource_already_exists_exception'
