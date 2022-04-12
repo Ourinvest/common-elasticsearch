@@ -57,11 +57,11 @@ class ElasticsearchLogger:
         return True
 
     async def set_body(request: Request, body: bytes):
-        """_summary_
+        """Set body from Request
 
         Args:
-            request (Request): _description_
-            body (bytes): _description_
+            request (Request)
+            body (bytes)
         """
 
         async def receive():
@@ -70,13 +70,13 @@ class ElasticsearchLogger:
         request._receive = receive
 
     async def get_body(self, request: Request) -> bytes:
-        """_summary_
+        """Get body from request
 
         Args:
-            request (Request): _description_
+            request (Request)
 
         Returns:
-            bytes: _description_
+            bytes
         """
         body = await request.body()
         await self.set_body(request, body)
