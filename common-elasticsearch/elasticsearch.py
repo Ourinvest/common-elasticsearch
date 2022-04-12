@@ -3,6 +3,7 @@ import os
 from typing import Dict
 
 from datetime import datetime
+from starlette.requests import Request
 
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
 
@@ -54,6 +55,33 @@ class ElasticsearchLogger:
             logging.error(e)
             return False
         return True
+
+    async def set_body(request: Request, body: bytes):
+        """_summary_
+
+        Args:
+            request (Request): _description_
+            body (bytes): _description_
+        """
+
+        async def receive():
+            return {"type": "http.request", "body": body}
+
+        request._receive = receive
+
+    async def get_body(self, request: Request) -> bytes:
+        """_summary_
+
+        Args:
+            request (Request): _description_
+
+        Returns:
+            bytes: _description_
+        """
+        body = await request.body()
+        await self.set_body(request, body)
+        return body
+
 
 
 async def send_logs(document: Dict):
