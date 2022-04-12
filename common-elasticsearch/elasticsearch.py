@@ -3,7 +3,7 @@ import os
 from typing import Dict
 
 from datetime import datetime
-from starlette.requests import Request
+from fastapi.requests import Request
 
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
 
@@ -81,9 +81,3 @@ class ElasticsearchLogger:
         body = await request.body()
         await self.set_body(request, body)
         return body
-
-
-
-async def send_logs(document: Dict):
-    if not ElasticsearchLogger(service_name="operations").create_document(document_dict=document):
-        logging.warning("Failed to log")
