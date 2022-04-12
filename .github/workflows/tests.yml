@@ -1,0 +1,15 @@
+name: Tests
+on:
+  pull_request:
+    branches:
+      - main
+      - staging
+      - development
+jobs:
+  Tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          echo "Dummy Workflow"
