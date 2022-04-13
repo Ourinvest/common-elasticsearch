@@ -1,8 +1,8 @@
 import logging
 import os
-from typing import Dict
 
 from datetime import datetime
+from fastapi.requests import Request
 
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
 
@@ -21,7 +21,7 @@ class ElasticsearchLogger:
     def __init__(self, service_name):
         self.index_name = f'{service_name}-{datetime.now().month}-{datetime.now().year}'
         self.client = OpenSearch(
-            hosts=[{'host': os.environ.get('ELASTICSEARCH_HOST', 'localhost'),
+            hosts=[{'host': os.environ.get('ELASTICSEARCH_HOST', 'es-container'),
                     'port': os.environ.get('ELASTICSEARCH_PORT', '9200')}],
             http_auth=ElasticsearchLogger.AWS_CREDENTIALS,
             connection_class=RequestsHttpConnection
@@ -55,7 +55,28 @@ class ElasticsearchLogger:
             return False
         return True
 
+    async def set_body(self, request: Request, body: bytes):
+        """Set body from Request
 
-async def send_logs(document: Dict):
-    if not ElasticsearchLogger(service_name="operations").create_document(document_dict=document):
-        logging.warning("Failed to log")
+        Args:
+            request (Request)
+            body (bytes)
+        """
+
+        async def receive():
+            return {"type": "http.request", "body": body}
+
+        request._receive = receive
+
+    async def get_body(self, request: Request) -> bytes:
+        """Get body from request
+
+        Args:
+            request (Request)
+
+        Returns:
+            bytes
+        """
+        body = await request.body()
+        await self.set_body(request, body)
+        return body
