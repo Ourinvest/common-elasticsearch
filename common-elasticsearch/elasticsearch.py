@@ -21,7 +21,7 @@ class ElasticsearchLogger:
     def __init__(self, service_name):
         self.index_name = f'{service_name}-{datetime.now().month}-{datetime.now().year}'
         self.client = OpenSearch(
-            hosts=[{'host': os.environ.get('ELASTICSEARCH_HOST', 'localhost'),
+            hosts=[{'host': os.environ.get('ELASTICSEARCH_HOST', 'es-container'),
                     'port': os.environ.get('ELASTICSEARCH_PORT', '9200')}],
             http_auth=ElasticsearchLogger.AWS_CREDENTIALS,
             connection_class=RequestsHttpConnection
