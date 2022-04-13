@@ -55,7 +55,7 @@ class ElasticsearchLogger:
             return False
         return True
 
-    async def set_body(request: Request, body: bytes):
+    async def set_body(self, request: Request, body: bytes):
         """Set body from Request
 
         Args:
