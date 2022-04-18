@@ -1,7 +1,6 @@
 import logging
 import os
-from typing import Dict
-
+from fastapi.requests import Request
 from datetime import datetime
 
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
@@ -18,13 +17,19 @@ class ElasticsearchLogger:
         AWS_CREDENTIALS = None
     RESOURCE_ALREADY_EXISTS = 'resource_already_exists_exception'
 
-    def __init__(self, service_name):
-        self.index_name = f'{service_name}-{datetime.now().month}-{datetime.now().year}'
+    def __init__(self, service_name, credentials=None):
+        self.index_name = f"{service_name}-{datetime.now().month}-{datetime.now().year}"
         self.client = OpenSearch(
-            hosts=[{'host': os.environ.get('ELASTICSEARCH_HOST', 'localhost'),
-                    'port': os.environ.get('ELASTICSEARCH_PORT', '9200')}],
-            http_auth=ElasticsearchLogger.AWS_CREDENTIALS,
-            connection_class=RequestsHttpConnection
+            hosts=[
+                {
+                    "host": os.environ.get("ELASTICSEARCH_HOST", "localhost"),
+                    "port": os.environ.get("ELASTICSEARCH_PORT", "9200"),
+                }
+            ],
+            use_ssl=True,
+            verify_certs=True,
+            http_auth=credentials,
+            connection_class=RequestsHttpConnection,
         )
         self.index = self._create_index()
 
@@ -45,7 +50,7 @@ class ElasticsearchLogger:
                 return True
         return True
 
-    def create_document(self, document_dict):
+    async def create_document(self, document_dict):
         try:
             self.client.index(index=self.index_name,
                               body=document_dict,
@@ -55,7 +60,26 @@ class ElasticsearchLogger:
             return False
         return True
 
+    @staticmethod
+    async def set_body(request: Request, body: bytes):
+        """Set body from RequestArgs:
+            request (Request)
+            body (bytes)
+        """
 
-async def send_logs(document: Dict):
-    if not ElasticsearchLogger(service_name="operations").create_document(document_dict=document):
-        logging.warning("Failed to log")
+        async def receive():
+            return {"type": "http.request", "body": body}
+
+        request._receive = receive
+
+    @staticmethod
+    async def get_body(request: Request) -> bytes:
+        """Get body from request
+        Args:
+            request (Request)
+        Returns:
+            bytes
+        """
+        body = await request.body()
+        await ElasticsearchLogger.set_body(request, body)
+        return body
