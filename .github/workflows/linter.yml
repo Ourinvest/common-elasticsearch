@@ -1,15 +1,24 @@
 name: Linter
-on:
-  pull_request:
-    branches:
-      - main
-      - staging
-      - development
+on: [ push ]
 jobs:
   Linter:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
       - name: Install dependencies
         run: |
-          echo "Dummy Workflow"
+          python -m pip install --upgrade pip
+          pip install pylint
+      - name: Analysing the code with pylint
+        run: >
+          pylint --disable=all 
+          --enable=unused-import,singleton-comparison,unidiomatic-typecheck,consider-using-enumerate,\
+          consider-iterating-dictionary,line-too-long,too-many-lines,trailing-whitespace,missing-final-newline,\
+          bad-whitespace,bad-continuation,wrong-import-order,ungrouped-imports,wrong-import-position,return-in-init,\
+          function-redefined,not-in-loop,return-outside-function,undefined-variable,no-staticmethod-decorator,bad-indentation,\
+          wildcard-import,unused-variable,unused-argument
+          $(git ls-files '*.py')
