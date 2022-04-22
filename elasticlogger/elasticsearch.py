@@ -1,9 +1,8 @@
-import logging
 import os
 from datetime import datetime
 from fastapi.requests import Request
 
-from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
+from opensearchpy import OpenSearch, RequestsHttpConnection
 
 
 class ElasticsearchLogger:
