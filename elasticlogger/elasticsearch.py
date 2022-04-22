@@ -1,20 +1,14 @@
-import logging
 import os
 from datetime import datetime
 from fastapi.requests import Request
 
-from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
+from opensearchpy import OpenSearch, RequestsHttpConnection
+
 
 class ElasticsearchLogger:
     """
     Class describing how to connect to ES ou Amazon Elasticsearch Service
     """
-    if os.environ.get('ENVIRONMENT', 'local') != "local":
-        AWS_CREDENTIALS = AWSV4SignerAuth((os.environ.get('ACCESS_KEY'),
-                                           os.environ.get('SECRET_KEY')), os.environ.get('REGION'))
-    else:
-        AWS_CREDENTIALS = None
-    RESOURCE_ALREADY_EXISTS = 'resource_already_exists_exception'
 
     def __init__(self, service_name, credentials=None):
         self.index_name = f"{service_name}-{datetime.now().month}-{datetime.now().year}"
@@ -30,40 +24,24 @@ class ElasticsearchLogger:
             http_auth=credentials,
             connection_class=RequestsHttpConnection,
         )
-        self.index = self._create_index()
 
     def _create_index(self):
         """
-        Tries to create the index, if it already exists will return an exception,
-        for that reason we need to use a try/except clause.
-
-        :return: bool (if the problem is ok True, else false)
+        Tries to create the index
         """
-        try:
+        if not self.client.indices.exists(index=self.index_name):
             self.client.indices.create(index=self.index_name, body={})
-        except Exception as e:
-            logging.error(e)
-            if not e.error == ElasticsearchLogger.RESOURCE_ALREADY_EXISTS:
-                return False
-            else:
-                return True
-        return True
 
     async def create_document(self, document_dict):
-        try:
-            self.client.index(index=self.index_name,
-                              body=document_dict,
-                              refresh=True)
-        except Exception as e:
-            logging.error(e)
-            return False
-        return True
+        self._create_index()
+        self.client.index(index=self.index_name, body=document_dict, refresh=True)
+
 
     @staticmethod
     async def set_body(request: Request, body: bytes):
         """Set body from RequestArgs:
-            request (Request)
-            body (bytes)
+        request (Request)
+        body (bytes)
         """
 
         async def receive():
