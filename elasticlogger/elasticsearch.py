@@ -5,7 +5,6 @@ from fastapi.requests import Request
 
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
 
-
 class ElasticsearchLogger:
     """
     Class describing how to connect to ES ou Amazon Elasticsearch Service
