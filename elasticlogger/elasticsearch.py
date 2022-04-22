@@ -1,7 +1,7 @@
 import logging
 import os
-from fastapi.requests import Request
 from datetime import datetime
+from fastapi.requests import Request
 
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
 
