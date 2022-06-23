@@ -6,9 +6,9 @@ requirements = [
 
 setup(
     name="elasticlogger",
+    url='https://github.com/Ourinvest/common-elasticsearch.git',
     version="0.0.0",
     packages=find_packages(),
-    py_modules=["common-elasticsearch"],
     install_requires=requirements,
     include_package_data=True,
 )
