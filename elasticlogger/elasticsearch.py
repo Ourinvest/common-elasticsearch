@@ -38,7 +38,7 @@ class ElasticsearchLogger:
 
 
     @staticmethod
-    async def set_body(request: Any, body: bytes):
+    async def set_body(request: any, body: bytes):
         """Set body from RequestArgs:
         request (Request)
         body (bytes)
@@ -50,7 +50,7 @@ class ElasticsearchLogger:
         request._receive = receive
 
     @staticmethod
-    async def get_body(request: Any) -> bytes:
+    async def get_body(request: any) -> bytes:
         """Get body from request
         Args:
             request (Request)
