@@ -1,8 +1,8 @@
 import os
 from datetime import datetime
-from fastapi.requests import Request
 
 from opensearchpy import OpenSearch, RequestsHttpConnection
+
 
 
 class ElasticsearchLogger:
@@ -38,7 +38,7 @@ class ElasticsearchLogger:
 
 
     @staticmethod
-    async def set_body(request: Request, body: bytes):
+    async def set_body(request: Any, body: bytes):
         """Set body from RequestArgs:
         request (Request)
         body (bytes)
@@ -50,7 +50,7 @@ class ElasticsearchLogger:
         request._receive = receive
 
     @staticmethod
-    async def get_body(request: Request) -> bytes:
+    async def get_body(request: Any) -> bytes:
         """Get body from request
         Args:
             request (Request)
