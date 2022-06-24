@@ -1,6 +1,7 @@
-import boto3
 import logging
 from datetime import datetime
+
+import boto3
 
 from opensearchpy import AWSV4SignerAuth, OpenSearch, RequestsHttpConnection
 
