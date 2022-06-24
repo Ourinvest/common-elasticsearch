@@ -1,6 +1,10 @@
 from setuptools import find_packages, setup
 
-requirements = ["opensearch-py==1.1.0"]
+requirements = [
+    "opensearch-py==1.1.0",
+    "boto3==1.24.16"
+]
+
 
 setup(
     name="elasticlogger",
