@@ -5,6 +5,7 @@ requirements = [
     "boto3==1.24.16"
 ]
 
+
 setup(
     name="elasticlogger",
     url='https://github.com/Ourinvest/common-elasticsearch.git',

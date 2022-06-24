@@ -21,6 +21,7 @@ class ElasticsearchLogger(AWSSigner):
     """
     Class describing how to connect to ES ou Amazon Elasticsearch Service
     """
+
     RESOURCE_ALREADY_EXISTS = 'resource_already_exists_exception'
 
     client = None
@@ -46,10 +47,7 @@ class ElasticsearchLogger(AWSSigner):
 
     def _create_index(self):
         """
-        Tries to create the index, if it already exists will return an exception,
-        for that reason we need to use a try/except clause.
-
-        :return: bool (if the problem is ok True, else false)
+        Tries to create the index
         """
         try:
             ElasticsearchLogger.client.indices.create(index=self.index_name, body={})
@@ -67,8 +65,8 @@ class ElasticsearchLogger(AWSSigner):
     @staticmethod
     async def set_body(request: any, body: bytes):
         """Set body from RequestArgs:
-            request (Request)
-            body (bytes)
+        request (Request)
+        body (bytes)
         """
 
         async def receive():
