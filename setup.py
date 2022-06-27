@@ -2,7 +2,8 @@ from setuptools import find_packages, setup
 
 requirements = [
     "opensearch-py==1.1.0",
-    "boto3==1.24.16"
+    "boto3==1.24.16",
+    "requests==2.28.0"
 ]
 
 

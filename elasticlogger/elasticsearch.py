@@ -8,7 +8,7 @@ from opensearchpy import AWSV4SignerAuth, OpenSearch, RequestsHttpConnection
 
 class AWSSigner:
     client = None
-    session = boto3.Session().get_credentials()
+    session = boto3.Session()
     credentials = session.get_credentials()
     region = session.region_name
     if credentials and region:
