@@ -7,14 +7,16 @@ from opensearchpy import AWSV4SignerAuth, OpenSearch, RequestsHttpConnection
 
 
 class AWSSigner:
-    client = None
     session = boto3.Session()
     credentials = session.get_credentials()
     region = session.region_name
-    if credentials and region:
-        signer = AWSV4SignerAuth(credentials, region)
-    else:
-        signer = None
+
+    @classmethod
+    def signer(cls):
+        if cls.credentials and cls.region:
+            return AWSV4SignerAuth(cls.credentials, cls.region)
+        else:
+            return None
 
 
 class ElasticsearchLogger(AWSSigner):
@@ -26,8 +28,9 @@ class ElasticsearchLogger(AWSSigner):
 
     client = None
 
-    def __init__(self, host: str, port: str, service_name: str):
+    def __init__(self, host: str, port: str, service_name: str, simulate: bool = True):
         if not ElasticsearchLogger.client:
+            self.auth = None if simulate else ElasticsearchLogger.signer()
             ElasticsearchLogger.client = OpenSearch(
                 hosts=[
                     {
@@ -37,7 +40,7 @@ class ElasticsearchLogger(AWSSigner):
                 ],
                 use_ssl=True,
                 verify_certs=True,
-                http_auth=ElasticsearchLogger.signer,
+                http_auth=self.auth,
                 connection_class=RequestsHttpConnection,
             )
         self.index_name = "{service_name}-{month}-{year}".format(service_name=service_name,
