@@ -53,12 +53,8 @@ class ElasticsearchLogger(AWSSigner):
         """
         Tries to create the index
         """
-        try:
-            ElasticsearchLogger.client.indices.create(index=self.index_name, body={})
-        except Exception as e:
-            if not e.error == ElasticsearchLogger.RESOURCE_ALREADY_EXISTS:
-                logging.error(e)
-                return False
+        if not self.client.indices.exists(index=self.index_name):
+            self.client.indices.create(index=self.index_name, body={})
         return True
 
     def create_document(self, document_dict):
