@@ -31,6 +31,7 @@ class ElasticsearchLogger(AWSSigner):
     def __init__(self, host: str, port: str, service_name: str, simulate: bool = True):
         if not ElasticsearchLogger.client:
             self.auth = None if simulate else ElasticsearchLogger.signer()
+            self.security = False if simulate else True
             ElasticsearchLogger.client = OpenSearch(
                 hosts=[
                     {
@@ -38,8 +39,8 @@ class ElasticsearchLogger(AWSSigner):
                         "port": port,
                     }
                 ],
-                use_ssl=True,
-                verify_certs=True,
+                use_ssl=self.security,
+                verify_certs=self.security,
                 http_auth=self.auth,
                 connection_class=RequestsHttpConnection,
             )
