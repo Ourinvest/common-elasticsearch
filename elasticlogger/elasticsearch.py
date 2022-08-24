@@ -1,69 +1,72 @@
 import logging
-import os
 from datetime import datetime
-from fastapi.requests import Request
 
-from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
+import boto3
 
-class ElasticsearchLogger:
+from opensearchpy import AWSV4SignerAuth, OpenSearch, RequestsHttpConnection
+
+
+class AWSSigner:
+    session = boto3.Session()
+    credentials = session.get_credentials()
+    region = session.region_name
+
+    @classmethod
+    def signer(cls):
+        if cls.credentials and cls.region:
+            return AWSV4SignerAuth(cls.credentials, cls.region)
+        else:
+            return None
+
+
+class ElasticsearchLogger(AWSSigner):
     """
     Class describing how to connect to ES ou Amazon Elasticsearch Service
     """
-    if os.environ.get('ENVIRONMENT', 'local') != "local":
-        AWS_CREDENTIALS = AWSV4SignerAuth((os.environ.get('ACCESS_KEY'),
-                                           os.environ.get('SECRET_KEY')), os.environ.get('REGION'))
-    else:
-        AWS_CREDENTIALS = None
+
     RESOURCE_ALREADY_EXISTS = 'resource_already_exists_exception'
 
-    def __init__(self, service_name, credentials=None):
-        self.index_name = f"{service_name}-{datetime.now().month}-{datetime.now().year}"
-        self.client = OpenSearch(
-            hosts=[
-                {
-                    "host": os.environ.get("ELASTICSEARCH_HOST", "localhost"),
-                    "port": os.environ.get("ELASTICSEARCH_PORT", "9200"),
-                }
-            ],
-            use_ssl=True,
-            verify_certs=True,
-            http_auth=credentials,
-            connection_class=RequestsHttpConnection,
-        )
+    client = None
+
+    def __init__(self, host: str, port: str, service_name: str, simulate: bool = True):
+        if not ElasticsearchLogger.client:
+            self.auth = None if simulate else ElasticsearchLogger.signer()
+            self.security = False if simulate else True
+            ElasticsearchLogger.client = OpenSearch(
+                hosts=[
+                    {
+                        "host": host,
+                        "port": port,
+                    }
+                ],
+                use_ssl=self.security,
+                verify_certs=self.security,
+                http_auth=self.auth,
+                connection_class=RequestsHttpConnection,
+            )
+        self.index_name = "{service_name}-{month}-{year}".format(service_name=service_name,
+                                                                 month=datetime.now().month,
+                                                                 year=datetime.now().year)
         self.index = self._create_index()
 
     def _create_index(self):
         """
-        Tries to create the index, if it already exists will return an exception,
-        for that reason we need to use a try/except clause.
-
-        :return: bool (if the problem is ok True, else false)
+        Tries to create the index
         """
-        try:
+        if not self.client.indices.exists(index=self.index_name):
             self.client.indices.create(index=self.index_name, body={})
-        except Exception as e:
-            logging.error(e)
-            if not e.error == ElasticsearchLogger.RESOURCE_ALREADY_EXISTS:
-                return False
-            else:
-                return True
         return True
 
-    async def create_document(self, document_dict):
-        try:
-            self.client.index(index=self.index_name,
-                              body=document_dict,
-                              refresh=True)
-        except Exception as e:
-            logging.error(e)
-            return False
-        return True
+    def create_document(self, document_dict):
+        self.client.index(index=self.index_name,
+                          body=document_dict,
+                          refresh=True)
 
     @staticmethod
-    async def set_body(request: Request, body: bytes):
+    async def set_body(request: any, body: bytes):
         """Set body from RequestArgs:
-            request (Request)
-            body (bytes)
+        request (Request)
+        body (bytes)
         """
 
         async def receive():
@@ -72,7 +75,7 @@ class ElasticsearchLogger:
         request._receive = receive
 
     @staticmethod
-    async def get_body(request: Request) -> bytes:
+    async def get_body(request: any) -> bytes:
         """Get body from request
         Args:
             request (Request)
